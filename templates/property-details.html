@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{% if product %}{{ product.title }} — {% endif %}Подробности — MusShop{% endblock %}
+
+{% block page_heading %}
+<div class="page-heading header-text">
+  <div class="container">
+    <div class="row"><div class="col-lg-12">
+      <span class="breadcrumb"><a href="{% url 'home' %}">Главная</a> / <a href="{% url 'shop_all' %}">Каталог</a>{% if product %} / {{ product.category.name }}{% endif %}</span>
+      <h3>{% if product %}{{ product.title }}{% else %}Товар{% endif %}</h3>
+    </div></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="property-detail-page">
+  {% if product %}
+    <div class="row g-4">
+      <div class="col-lg-6">
+        <div class="ratio ratio-4x3 rounded shadow-sm overflow-hidden">
+          {% if product.image %}
+            <img src="{{ product.image.url }}" class="w-100 h-100 object-fit-cover" alt="{{ product.title }}">
+          {% else %}
+            <img src="{% static 'assets/images/property-06.jpg' %}" class="w-100 h-100 object-fit-cover" alt="{{ product.title }}">
+          {% endif %}
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="card shadow-sm" style="border-radius:16px;">
+          <div class="card-body p-4">
+            <span class="text-muted small">Категория: <a href="{% url 'category' product.category.slug %}">{{ product.category.name }}</a></span>
+            <h2 class="mt-2">{{ product.title }}</h2>
+            <div class="d-flex align-items-baseline gap-2 mt-3">
+              <h3 class="text-primary mb-0">{{ product.price|floatformat:0 }} ₸</h3>
+              {% if not product.is_active %}<span class="badge bg-secondary">Нет в наличии</span>{% endif %}
+            </div>
+            {% if product.short_desc %}<p class="mt-3">{{ product.short_desc }}</p>{% endif %}
+            {% if product.description %}<div class="text-muted">{{ product.description|linebreaksbr }}</div>{% endif %}
+            <form class="mt-4" action="{% url 'cart_add' product.slug %}" method="post">
+              {% csrf_token %}
+              <div class="input-group" style="max-width:240px;">
+                <input type="number" class="form-control" name="qty" value="1" min="1">
+                <button class="btn btn-primary" type="submit">Добавить</button>
+              </div>
+              <input type="hidden" name="replace" value="0">
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% else %}
+    <div class="alert alert-info">Информация о товаре недоступна.</div>
+  {% endif %}
+</div>
+{% endblock %}

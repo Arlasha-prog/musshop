@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ product.title }} — MusShop{% endblock %}
+
+{% block page_heading %}
+<div class="page-heading header-text">
+  <div class="container">
+    <div class="row"><div class="col-lg-12">
+      <span class="breadcrumb"><a href="{% url 'home' %}">Главная</a> / <a href="{% url 'shop_all' %}">Каталог</a> / {{ product.category.name }}</span>
+      <h3>{{ product.title }}</h3>
+    </div></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="product-detail">
+  <div class="row g-4">
+    <div class="col-lg-6">
+      <div class="ratio ratio-4x3 rounded shadow-sm overflow-hidden">
+        {% if product.image %}
+          <img src="{{ product.image.url }}" class="w-100 h-100 object-fit-cover" alt="{{ product.title }}">
+        {% else %}
+          <img src="{% static 'assets/images/property-01.jpg' %}" class="w-100 h-100 object-fit-cover" alt="{{ product.title }}">
+        {% endif %}
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="card shadow-sm" style="border-radius:16px;">
+        <div class="card-body p-4">
+          <span class="text-muted small">Категория: <a href="{% url 'category' product.category.slug %}">{{ product.category.name }}</a></span>
+          <h2 class="mt-2">{{ product.title }}</h2>
+          <div class="d-flex align-items-baseline gap-2 mt-3">
+            <h3 class="text-primary mb-0">{{ product.price|floatformat:0 }} ₸</h3>
+            {% if not product.is_active %}<span class="badge bg-secondary">Нет в наличии</span>{% endif %}
+          </div>
+
+          {% if product.short_desc %}
+            <p class="mt-4 mb-0 lead">{{ product.short_desc }}</p>
+          {% endif %}
+          {% if product.description %}
+            <div class="mt-3 product-description">{{ product.description|linebreaksbr }}</div>
+          {% endif %}
+
+          <form class="mt-4" action="{% url 'cart_add' product.slug %}" method="post">
+            {% csrf_token %}
+            <div class="input-group" style="max-width:240px;">
+              <input type="number" name="qty" value="1" min="1" class="form-control">
+              <button class="btn btn-primary" type="submit">В корзину</button>
+            </div>
+            <input type="hidden" name="replace" value="0">
+          </form>
+
+          <div class="mt-4 small text-muted">
+            <div>ID товара: {{ product.id }}</div>
+            <div>Статус: {% if product.is_active %}в наличии{% else %}нет в наличии{% endif %}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% if related %}
+    <div class="mt-5">
+      <h4 class="mb-3">Похожие товары</h4>
+      <div class="row g-4">
+        {% for item in related %}
+          <div class="col-sm-6 col-lg-4">
+            <div class="card product-card h-100">
+              <div class="product-thumb mb-3">
+                {% if item.image %}
+                  <img src="{{ item.image.url }}" alt="{{ item.title }}">
+                {% else %}
+                  <img src="{% static 'assets/images/property-02.jpg' %}" alt="{{ item.title }}">
+                {% endif %}
+              </div>
+              <span class="text-muted small">{{ item.category.name }}</span>
+              <h5 class="mt-1"><a href="{% url 'product' item.slug %}">{{ item.title }}</a></h5>
+              <div class="price mt-auto">{{ item.price|floatformat:0 }} ₸</div>
+              <a class="btn btn-outline-dark mt-3" href="{% url 'product' item.slug %}">Подробнее</a>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

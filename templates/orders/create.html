@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Оформление заказа — MusShop{% endblock %}
+
+{% block extra_css %}
+<link href="{% static 'assets/css/templatemo-villa-agency.css' %}" rel="stylesheet">
+<style>
+  .checkout-wrap{max-width:900px;margin:40px auto;padding:24px;background:#fff;border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,.06)}
+  .checkout-grid{display:grid;grid-template-columns:1fr 420px;gap:24px}
+  @media (max-width: 960px){.checkout-grid{grid-template-columns:1fr}}
+  .card{background:#fafafa;border-radius:10px;padding:16px}
+  .btn-primary{display:inline-block;background:#f35525;color:#fff;border-radius:24px;padding:10px 22px;border:none;cursor:pointer}
+  .btn-primary:disabled{opacity:.65;cursor:not-allowed}
+  .totals{font-weight:700;font-size:18px;text-align:right;margin-top:8px}
+  table{width:100%}
+  th,td{padding:8px}
+  th{text-align:left;color:#666}
+  td{text-align:right}
+  td:first-child{text-align:left}
+  .muted{color:#888}
+  .field{margin-bottom:12px}
+  @media (max-width:576px){.btn-primary{width:100%}}
+</style>
+{% endblock %}
+
+{% block page_heading %}
+<div class="page-heading header-text">
+  <div class="container">
+    <div class="row"><div class="col-lg-12">
+      <h3>Оформление заказа</h3>
+    </div></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="checkout-wrap">
+  <div class="checkout-grid">
+    <div class="card">
+      <form method="post" novalidate>
+        {% csrf_token %}
+        <div class="field">
+          <label>Имя</label>
+          <input type="text" name="customer_name" value="{{ form.customer_name.value|default_if_none:'' }}" required class="form-control">
+          {% for e in form.customer_name.errors %}<div class="muted">{{ e }}</div>{% endfor %}
+        </div>
+        <div class="field">
+          <label>Телефон</label>
+          <input type="text" name="phone" value="{{ form.phone.value|default_if_none:'' }}" required class="form-control">
+          {% for e in form.phone.errors %}<div class="muted">{{ e }}</div>{% endfor %}
+        </div>
+        <div class="field">
+          <label>Адрес (необязательно)</label>
+          <input type="text" name="address" value="{{ form.address.value|default_if_none:'' }}" class="form-control">
+        </div>
+        <div class="field">
+          <label>Комментарий</label>
+          <textarea name="comment" rows="4" class="form-control">{{ form.comment.value|default_if_none:'' }}</textarea>
+        </div>
+        <button type="submit" class="btn-primary">Подтвердить заказ</button>
+      </form>
+    </div>
+
+    <div class="card">
+      <h4>Содержимое корзины</h4>
+      {% if items %}
+        <table>
+          <thead><tr><th>Товар</th><th>Кол-во</th><th>Цена</th><th>Сумма</th></tr></thead>
+          <tbody>
+          {% for it in items %}
+            <tr>
+              <td>{{ it.product.title }}</td>
+              <td>{{ it.qty }}</td>
+              <td>{{ it.price }}</td>
+              <td>{{ it.line_total }}</td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+        <div class="totals">Итого: {{ total }}</div>
+      {% else %}
+        <p class="muted">Корзина пуста.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

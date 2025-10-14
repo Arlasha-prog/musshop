@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{% if category %}{{ category.name }} — {% endif %}Каталог — MusShop{% endblock %}
+
+{% block page_heading %}
+<div class="page-heading header-text">
+  <div class="container">
+    <div class="row"><div class="col-lg-12">
+      <span class="breadcrumb"><a href="{% url 'home' %}">Главная</a> / Каталог{% if category %} / {{ category.name }}{% endif %}</span>
+      <h3>{% if category %}{{ category.name }}{% else %}Все товары{% endif %}</h3>
+    </div></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="catalog-page">
+  <div class="row align-items-center g-3 mb-4">
+    <div class="col-12 col-md-4">
+      <form method="get" class="w-100" role="search">
+        <input type="text" name="q" value="{{ query|default:'' }}" class="form-control" placeholder="Поиск по товарам">
+        {% if sort %}<input type="hidden" name="sort" value="{{ sort }}">{% endif %}
+      </form>
+    </div>
+    <div class="col-6 col-md-3">
+      <form method="get" class="w-100">
+        {% if query %}<input type="hidden" name="q" value="{{ query }}">{% endif %}
+        <select class="form-select" name="sort" onchange="this.form.submit()">
+          <option value="">Сортировка</option>
+          <option value="price_asc" {% if sort == 'price_asc' %}selected{% endif %}>Цена: по возрастанию</option>
+          <option value="price_desc" {% if sort == 'price_desc' %}selected{% endif %}>Цена: по убыванию</option>
+          <option value="new" {% if sort == 'new' %}selected{% endif %}>Новинки</option>
+        </select>
+      </form>
+    </div>
+    <div class="col-12 col-md-5 text-md-end">
+      <div class="cat-pills justify-content-md-end">
+        <a class="pill {% if not category %}active{% endif %}" href="{% url 'shop_all' %}">Все</a>
+        {% for cat in categories %}
+          <a class="pill {% if category and category.id == cat.id %}active{% endif %}" href="{% url 'category' cat.slug %}">{{ cat.name }}</a>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    {% for product in products %}
+      <div class="col-sm-6 col-lg-4">
+        <div class="card product-card h-100">
+          <div class="product-thumb mb-3">
+            {% if product.image %}
+              <img src="{{ product.image.url }}" alt="{{ product.title }}">
+            {% else %}
+              <img src="{% static 'assets/images/property-01.jpg' %}" alt="{{ product.title }}">
+            {% endif %}
+          </div>
+          <span class="text-muted small">{{ product.category.name }}</span>
+          <h5 class="mt-1"><a href="{% url 'product' product.slug %}">{{ product.title }}</a></h5>
+          <div class="price mt-auto">{{ product.price|floatformat:0 }} ₸</div>
+          <div class="d-flex gap-2 mt-3">
+            <a class="btn btn-outline-dark" href="{% url 'product' product.slug %}">Подробнее</a>
+            <form action="{% url 'cart_add' product.slug %}" method="post" class="ms-auto">
+              {% csrf_token %}
+              <input type="hidden" name="qty" value="1">
+              <input type="hidden" name="replace" value="0">
+              <button class="btn btn-primary" type="submit">В корзину</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <div class="col-12">
+        <div class="alert alert-info">Товары не найдены. Попробуйте изменить параметры поиска.</div>
+      </div>
+    {% endfor %}
+  </div>
+
+  {% if products.has_other_pages %}
+    <nav class="mt-4">
+      <ul class="pagination justify-content-center">
+        {% if products.has_previous %}
+          <li class="page-item"><a class="page-link" href="?page={{ products.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if sort %}&sort={{ sort }}{% endif %}">Назад</a></li>
+        {% else %}
+          <li class="page-item disabled"><span class="page-link">Назад</span></li>
+        {% endif %}
+
+        {% for num in products.paginator.page_range %}
+          {% if products.number == num %}
+            <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+          {% else %}
+            <li class="page-item"><a class="page-link" href="?page={{ num }}{% if query %}&q={{ query }}{% endif %}{% if sort %}&sort={{ sort }}{% endif %}">{{ num }}</a></li>
+          {% endif %}
+        {% endfor %}
+
+        {% if products.has_next %}
+          <li class="page-item"><a class="page-link" href="?page={{ products.next_page_number }}{% if query %}&q={{ query }}{% endif %}{% if sort %}&sort={{ sort }}{% endif %}">Вперёд</a></li>
+        {% else %}
+          <li class="page-item disabled"><span class="page-link">Вперёд</span></li>
+        {% endif %}
+      </ul>
+    </nav>
+  {% endif %}
+</div>
+{% endblock %}

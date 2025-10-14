@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Профиль — MusShop{% endblock %}
+
+{% block page_heading %}
+<div class="page-heading header-text"><div class="container"><div class="row"><div class="col-lg-12"><h3>Профиль</h3></div></div></div></div>
+{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+  <div class="col-lg-4">
+    <div class="card p-4 shadow-sm h-100">
+      <div class="d-flex align-items-center gap-3">
+        <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center" style="width:64px;height:64px; font-size:28px;">
+          <i class="fa fa-user"></i>
+        </div>
+        <div>
+          <h5 class="mb-1">{{ request.user.get_full_name|default:request.user.username }}</h5>
+          <div class="text-muted small">{{ request.user.email }}</div>
+        </div>
+      </div>
+      <hr>
+      <div class="d-grid gap-2">
+        <a class="btn btn-outline-primary" href="{% url 'accounts:edit_profile' %}"><i class="fa fa-edit"></i> Изменить профиль</a>
+        <a class="btn btn-outline-secondary" href="{% url 'accounts:password_change' %}"><i class="fa fa-key"></i> Сменить пароль</a>
+        <a class="btn btn-outline-dark" href="{% url 'cart_detail' %}"><i class="fa fa-shopping-cart"></i> Перейти в корзину</a>
+        <form method="post" action="{% url 'accounts:logout' %}">
+          {% csrf_token %}
+          <button class="btn btn-outline-danger" type="submit"><i class="fa fa-sign-out-alt"></i> Выйти</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-8">
+    <div class="card p-4 shadow-sm h-100">
+      <h5 class="mb-3">История заказов</h5>
+      {% if orders %}
+        <div class="table-responsive">
+          <table class="table align-middle">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Дата</th>
+                <th class="text-end">Сумма</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for o in orders %}
+                <tr>
+                  <td>{{ o.id }}</td>
+                  <td>{{ o.created|date:'d.m.Y H:i' }}</td>
+                  <td class="text-end">{{ o.total_value|floatformat:0 }} ₸</td>
+                  <td class="text-end"><a class="btn btn-sm btn-outline-primary" href="{% url 'orders:success' o.id %}">Подробнее</a></td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <p class="text-muted">Пока нет оформленных заказов.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

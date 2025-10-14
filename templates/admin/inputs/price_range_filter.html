@@ -1,0 +1,11 @@
+{% load i18n %}
+<style>
+  .adm-price-range{display:flex;gap:6px;align-items:center}
+  .adm-price-range input{width:90px;padding:3px 6px;border:1px solid #ddd;border-radius:6px}
+  .adm-price-range button{padding:4px 8px;border:1px solid #ddd;border-radius:6px;background:#fff;cursor:pointer}
+</style>
+<div class="adm-price-range">
+  <input type="number" step="1" name="price_min" value="{{ request.GET.price_min|default_if_none:'' }}" placeholder="от">
+  <input type="number" step="1" name="price_max" value="{{ request.GET.price_max|default_if_none:'' }}" placeholder="до">
+  <button type="submit">{% trans "OK" %}</button>
+</div>

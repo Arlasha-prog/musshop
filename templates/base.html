@@ -1,0 +1,329 @@
+﻿{% load static %}
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>{% block title %}MusShop{% endblock %}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'assets/css/fontawesome.css' %}">
+  <link rel="stylesheet" href="{% static 'assets/css/templatemo-villa-agency.css' %}">
+  <link rel="stylesheet" href="{% static 'assets/css/mobile.css' %}">
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+{% block body_top %}{% endblock %}
+
+<header class="site-header">
+  <div class="container">
+    <div class="navbar-shell">
+      <div class="nav-brand">
+        <a href="{% url 'home' %}" class="brand-link">
+          <img src="{% static 'assets/images/musshop-logo.png' %}" alt="MusShop" class="brand-logo">
+          <div class="brand-text">
+            <span class="brand-name">MusShop Guide</span>
+            <span class="brand-subtitle">исламские подарки онлайн</span>
+          </div>
+        </a>
+      </div>
+      <button class="nav-toggle" type="button" aria-controls="primaryNav" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+      <nav class="nav-center" id="primaryNav">
+        <a href="{% url 'home' %}" class="{% if request.resolver_match.url_name == 'home' %}active{% endif %}">Главная</a>
+        <a href="{% url 'shop_all' %}" class="{% if request.resolver_match.url_name == 'shop_all' or request.resolver_match.url_name == 'category' or request.resolver_match.url_name == 'product' %}active{% endif %}">Каталог</a>
+        <a href="{% url 'orders:create' %}" class="{% if request.resolver_match.url_name == 'create' %}active{% endif %}">Оформить заказ</a>
+        <a href="{% url 'flatpage' 'contact' %}" class="{% if request.resolver_match.url_name == 'contact' %}active{% endif %}">Контакты</a>
+      </nav>
+      <div id="prayer-times-inline" class="nav-prayer-times">
+        <span class="fw-semibold" style="white-space:nowrap;">🕌 Намаз (Алматы):</span>
+        <span class="pt-item" id="pt-fajr" style="white-space:nowrap;">Фаджр — …</span><span class="text-muted d-none d-lg-inline">|</span>
+        <span class="pt-item" id="pt-dhuhr" style="white-space:nowrap;">Зухр — …</span><span class="text-muted d-none d-lg-inline">|</span>
+        <span class="pt-item" id="pt-asr" style="white-space:nowrap;">Аср — …</span><span class="text-muted d-none d-lg-inline">|</span>
+        <span class="pt-item" id="pt-maghrib" style="white-space:nowrap;">Магриб — …</span><span class="text-muted d-none d-lg-inline">|</span>
+        <span class="pt-item" id="pt-isha" style="white-space:nowrap;">Иша — …</span>
+        <span class="text-muted d-none d-lg-inline">•</span>
+        <span id="next-prayer" style="white-space:nowrap;">
+          Следующий: <b id="next-name">…</b> в <b id="next-time">…</b>,
+          осталось <b id="next-countdown">—:—:—</b>
+        </span>
+      </div>
+      <div class="nav-actions">
+        <a class="nav-cart {% if request.resolver_match.url_name == 'cart_detail' %}active{% endif %}" href="{% url 'cart_detail' %}">
+          <i class="fa fa-shopping-bag"></i>
+          {% if cart_count %}<span class="badge">{{ cart_count }}</span>{% endif %}
+        </a>
+        {% if request.user.is_authenticated %}
+          <a class="nav-button" href="{% url 'accounts:profile' %}"><i class="fa fa-user-circle"></i> {{ request.user.username }}</a>
+          <form method="post" action="{% url 'accounts:logout' %}">
+            {% csrf_token %}
+            <button class="nav-button ghost" type="submit"><i class="fa fa-sign-out-alt"></i> Выход</button>
+          </form>
+        {% else %}
+          <a class="nav-button" href="{% url 'accounts:login' %}"><i class="fa fa-sign-in-alt"></i> Вход</a>
+          <a class="nav-button ghost" href="{% url 'accounts:register' %}">Регистрация</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</header>
+
+{% block page_heading %}{% endblock %}
+
+<main class="section">
+  {% block content_wrapper %}
+  <div class="container">
+    {% block content %}{% endblock %}
+  </div>
+  {% endblock %}
+</main>
+
+<footer class="site-footer mt-5">
+  <div class="container">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <a href="{% url 'home' %}" class="footer-logo" aria-label="MusShop">
+          <img src="{% static 'assets/images/musshop-logo.png' %}" alt="Логотип MusShop">
+        </a>
+        <p class="footer-text">
+          MusShop Guide — вдохновляющие исламские подарки, собранные вручную. Мы помогаем подобрать набор к любому событию.
+        </p>
+      </div>
+      <div class="footer-links">
+        <h6>Навигация</h6>
+        <ul>
+          <li><a href="{% url 'home' %}">Главная</a></li>
+          <li><a href="{% url 'shop_all' %}">Каталог</a></li>
+          <li><a href="{% url 'orders:create' %}">Оформить заказ</a></li>
+          <li><a href="{% url 'cart_detail' %}">Корзина</a></li>
+        </ul>
+      </div>
+      <div class="footer-links">
+        <h6>Контакты</h6>
+        <ul>
+          <li>Email: <a href="mailto:arlasha2906@gmail.com">arlasha2906@gmail.com</a></li>
+          <li>Адрес: Алматы, пр. Абая 60</li>
+          <li>Телефон: <a href="tel:+77781212901">+7 778 121 29 01</a></li>
+        </ul>
+        <!-- Блок с временем намазов. При необходимости можно заменить город или метод расчёта. -->
+        <div class="footer-prayer-times" id="footerPrayerTimes">Загрузка расписания намазов...</div>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div class="container">
+      <div class="footer-bottom-inner">
+        <div class="footer-location"><span class="flag">🇰🇿</span> Казахстан</div>
+        <div class="footer-links">
+          <a href="{% url 'flatpage' 'contact' %}">Юридическая информация</a>
+          <a href="{% url 'accounts:register' %}">Обработка данных</a>
+        </div>
+        <div class="footer-copy">© 2025 MusShop. Все права защищены.</div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script src="{% static 'vendor/bootstrap/js/bootstrap.min.js' %}"></script>
+<script>
+(function () {
+  const API = "https://api.aladhan.com/v1/timingsByCity?city=Almaty&country=Kazakhstan&method=2";
+
+  const ids = {
+    Fajr: "pt-fajr",
+    Dhuhr: "pt-dhuhr",
+    Asr: "pt-asr",
+    Maghrib: "pt-maghrib",
+    Isha: "pt-isha",
+  };
+
+  const footerTarget = document.getElementById("footerPrayerTimes");
+  const container = document.getElementById("prayer-times-inline");
+  const nextNameEl = document.getElementById("next-name");
+  const nextTimeEl = document.getElementById("next-time");
+  const nextCountdownEl = document.getElementById("next-countdown");
+
+  const order = ["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"];
+  const ruName = {
+    Fajr: "Фаджр",
+    Dhuhr: "Зухр",
+    Asr: "Аср",
+    Maghrib: "Магриб",
+    Isha: "Иша",
+  };
+
+  let timings = null;
+  let targetDate = null;
+  let tickTimer = null;
+
+  function fmtTwo(n) {
+    return (n < 10 ? "0" : "") + n;
+  }
+
+  function renderTimes() {
+    Object.entries(ids).forEach(([key, elementId]) => {
+      const el = document.getElementById(elementId);
+      const raw = timings[key];
+      if (el && raw) {
+        const value = raw.slice(0, 5);
+        el.innerHTML = `${ruName[key]} — <b>${value}</b>`;
+      }
+    });
+    if (footerTarget) {
+      const list = order.map((key) => `${ruName[key]} ${timings[key].slice(0, 5)}`);
+      footerTarget.textContent = `Намаз: ${list.join(" | ")}`;
+    }
+  }
+
+  function toDateToday(timeStr, addDays = 0) {
+    const [h, m] = timeStr.split(":").map(Number);
+    const date = new Date();
+    date.setSeconds(0, 0);
+    date.setHours(h, m, 0, 0);
+    if (addDays) {
+      date.setDate(date.getDate() + addDays);
+    }
+    return date;
+  }
+
+  function minutesFromMidnight(timeStr) {
+    const [h, m] = timeStr.split(":").map(Number);
+    return h * 60 + m;
+  }
+
+  function nowMinutes() {
+    const now = new Date();
+    return now.getHours() * 60 + now.getMinutes();
+  }
+
+  function pickNextPrayer() {
+    const current = nowMinutes();
+    let idx = order.findIndex((key) => minutesFromMidnight(timings[key]) > current);
+    let addDays = 0;
+
+    if (idx === -1) {
+      idx = 0;
+      addDays = 1;
+    }
+
+    const key = order[idx];
+    targetDate = toDateToday(timings[key], addDays);
+
+    if (nextNameEl) {
+      nextNameEl.textContent = ruName[key];
+    }
+    if (nextTimeEl) {
+      nextTimeEl.textContent = timings[key].slice(0, 5);
+    }
+  }
+
+  function tick() {
+    if (!targetDate) {
+      return;
+    }
+    const now = new Date();
+    let diff = targetDate - now;
+
+    if (diff <= 0) {
+      pickNextPrayer();
+      diff = targetDate - new Date();
+    }
+
+    const totalSec = Math.max(0, Math.floor(diff / 1000));
+    const h = Math.floor(totalSec / 3600);
+    const m = Math.floor((totalSec % 3600) / 60);
+    const s = totalSec % 60;
+
+    if (nextCountdownEl) {
+      nextCountdownEl.textContent = `${fmtTwo(h)}:${fmtTwo(m)}:${fmtTwo(s)}`;
+    }
+  }
+
+  function startCountdown() {
+    if (tickTimer) {
+      clearInterval(tickTimer);
+    }
+    pickNextPrayer();
+    tick();
+    tickTimer = setInterval(tick, 1000);
+  }
+
+  function fetchTimings() {
+    fetch(API)
+      .then((response) => response.json())
+      .then(({ data }) => {
+        timings = data?.timings;
+        if (!timings) {
+          throw new Error("Нет данных о времени намаза");
+        }
+        renderTimes();
+        startCountdown();
+      })
+      .catch((error) => {
+        console.error("Ошибка загрузки времени намаза:", error);
+        if (footerTarget) {
+          footerTarget.textContent = "Не удалось загрузить время намаза";
+        }
+        if (container) {
+          container.style.display = "none";
+        }
+      });
+  }
+
+  fetchTimings();
+  setInterval(fetchTimings, 60 * 60 * 1000);
+})();
+</script>
+<script>
+  (function(){
+    const toggle = document.querySelector('.nav-toggle');
+    const nav = document.getElementById('primaryNav');
+
+    if(!toggle || !nav){
+      return;
+    }
+
+    const closeNav = () => {
+      nav.classList.remove('is-open');
+      toggle.setAttribute('aria-expanded', 'false');
+      document.body.classList.remove('nav-open');
+    };
+
+    const openNav = () => {
+      nav.classList.add('is-open');
+      toggle.setAttribute('aria-expanded', 'true');
+      document.body.classList.add('nav-open');
+    };
+
+    toggle.addEventListener('click', function(){
+      const willOpen = !nav.classList.contains('is-open');
+      if(willOpen){
+        openNav();
+      } else {
+        closeNav();
+      }
+    });
+
+    nav.querySelectorAll('a').forEach(function(link){
+      link.addEventListener('click', closeNav);
+    });
+
+    window.addEventListener('resize', function(){
+      if(window.innerWidth >= 992){
+        closeNav();
+      }
+    });
+
+    document.addEventListener('click', function(event){
+      const inside = event.target.closest('.navbar-shell');
+      if(!inside){
+        closeNav();
+      }
+    });
+  })();
+</script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>
