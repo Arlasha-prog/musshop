@@ -1,20 +1,26 @@
 from pathlib import Path
 import os
 
+from dotenv import load_dotenv
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-musshop-key'  # для учебного проекта сгодится
-DEBUG = True
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '.ngrok.io', '.ngrok-free.app', '.ngrok-free.dev']
+load_dotenv(BASE_DIR / '.env')
 
-# Trust public tunnels/domains for CSRF origin check (Django 4+/5+ requires scheme)
-CSRF_TRUSTED_ORIGINS = [
-    'http://127.0.0.1',
-    'http://localhost',
-    'https://*.ngrok.io',
-    'https://*.ngrok-free.app',
-    'https://*.ngrok-free.dev',
-]
+
+def _split_env_list(value: str | None, default: list[str]) -> list[str]:
+    if not value:
+        return default
+    return [item.strip() for item in value.split(',') if item.strip()]
+
+
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-musshop-key')
+DEBUG = os.getenv('DJANGO_DEBUG', 'False').lower() in {'1', 'true', 'yes'}
+ALLOWED_HOSTS = _split_env_list(
+    os.getenv('DJANGO_ALLOWED_HOSTS'),
+    ["musshop.asia", "www.musshop.asia", "127.0.0.1", "localhost", "<89.207.251.140>"],
+)
+
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -96,3 +102,12 @@ LOGOUT_REDIRECT_URL = "home"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 CART_SESSION_ID = "cart"
+
+CSRF_TRUSTED_ORIGINS = _split_env_list(
+    os.getenv('DJANGO_CSRF_TRUSTED_ORIGINS'),
+    ['https://musshop.asia', 'https://www.musshop.asia'],
+)
+CSRF_TRUSTED_ORIGINS = [
+    "https://musshop.asia",
+    "https://www.musshop.asia",
+]
