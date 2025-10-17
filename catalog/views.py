@@ -1,9 +1,11 @@
+from functools import wraps
+
 from django.shortcuts import render, get_object_or_404
 from django.db.models import Q, Count
 from django.core.paginator import Paginator
 from django.http import JsonResponse, Http404
 
-from .models import Product, Category
+from .models import Product, Category, APIKey
 
 
 def home(request):
@@ -111,6 +113,34 @@ def flatpage(request, page):
 
 
 # ====== API (JSON) ======
+
+
+def _extract_api_key(request):
+    auth_header = request.headers.get("Authorization")
+    if auth_header and auth_header.lower().startswith("api-key "):
+        return auth_header[7:].strip()
+    return (
+        request.headers.get("X-API-Key")
+        or request.META.get("HTTP_X_API_KEY")
+        or request.GET.get("api_key")
+    )
+
+
+def require_api_key(view_func):
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        key = _extract_api_key(request)
+        if not key or not APIKey.objects.filter(key=key, is_active=True).exists():
+            return JsonResponse(
+                {"detail": "API key is missing or invalid."},
+                status=401,
+            )
+        return view_func(request, *args, **kwargs)
+
+    return wrapper
+
+
+@require_api_key
 def api_categories(request):
     categories = (
         Category.objects.annotate(
@@ -145,6 +175,7 @@ def api_categories(request):
     return JsonResponse(data, safe=False)
 
 
+@require_api_key
 def api_products(request):
     qs = Product.objects.filter(is_active=True).order_by("-created_at")
     data = [
@@ -165,6 +196,7 @@ def api_products(request):
     return JsonResponse(data, safe=False)
 
 
+@require_api_key
 def api_product_detail(request, pk: int):
     try:
         p = Product.objects.get(pk=pk, is_active=True)

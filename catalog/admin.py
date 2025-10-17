@@ -3,7 +3,7 @@ from django.contrib import admin, messages
 from django.utils.html import format_html
 from django.http import HttpResponse
 import csv
-from .models import Category, Product
+from .models import Category, Product, APIKey
 from .forms import ProductAdminForm
 from .filters import PriceRangeFilter
 
@@ -114,7 +114,45 @@ class ProductAdmin(admin.ModelAdmin):
                 return format_html(
                     '<img src="{}" style="max-width:240px;border-radius:10px;">',
                     obj.image.url,
-                )
+        )
             except Exception:
                 return "—"
         return "—"
+
+
+@admin.action(description="Пересоздать выбранные ключи")
+def regenerate_keys(modeladmin, request, queryset):
+    regenerated = 0
+    for api_key in queryset:
+        api_key.regenerate()
+        regenerated += 1
+    if regenerated:
+        modeladmin.message_user(
+            request,
+            f"Обновлено ключей: {regenerated}",
+            messages.SUCCESS,
+        )
+    else:
+        modeladmin.message_user(
+            request,
+            "Нет ключей для обновления",
+            messages.WARNING,
+        )
+
+
+@admin.register(APIKey)
+class APIKeyAdmin(admin.ModelAdmin):
+    list_display = ("name", "preview_key", "is_active", "created_at", "updated_at")
+    readonly_fields = ("key", "created_at", "updated_at")
+    search_fields = ("name", "key")
+    list_filter = ("is_active", "created_at")
+    actions = [regenerate_keys]
+    ordering = ("-created_at",)
+
+    @admin.display(description="Ключ")
+    def preview_key(self, obj: APIKey):
+        if not obj.key:
+            return "—"
+        if len(obj.key) <= 10:
+            return obj.key
+        return f"{obj.key[:6]}…{obj.key[-4:]}"

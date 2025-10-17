@@ -1,3 +1,5 @@
+import secrets
+
 from django.db import models
 from django.utils.text import slugify
 
@@ -50,3 +52,32 @@ class Product(models.Model):
                 i += 1
             self.slug = candidate
         super().save(*args, **kwargs)
+
+
+class APIKey(models.Model):
+    name = models.CharField("Название ключа", max_length=120, unique=True)
+    key = models.CharField("Ключ", max_length=64, unique=True, editable=False, blank=True)
+    is_active = models.BooleanField("Активен", default=True)
+    created_at = models.DateTimeField("Создан", auto_now_add=True)
+    updated_at = models.DateTimeField("Обновлён", auto_now=True)
+
+    class Meta:
+        verbose_name = "API ключ"
+        verbose_name_plural = "API ключи"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        status = "активный" if self.is_active else "отключён"
+        return f"{self.name} ({status})"
+
+    def _generate_key(self) -> str:
+        return secrets.token_urlsafe(32)
+
+    def save(self, *args, **kwargs):
+        if not self.key:
+            self.key = self._generate_key()
+        super().save(*args, **kwargs)
+
+    def regenerate(self):
+        self.key = self._generate_key()
+        self.save(update_fields=["key", "updated_at"])
