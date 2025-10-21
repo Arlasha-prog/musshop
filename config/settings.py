@@ -33,7 +33,8 @@ INSTALLED_APPS = [
     "catalog",
     "accounts",
     'cart', 
-    'orders',
+    'orders', 
+    'apikeys',
     
 
 ]
