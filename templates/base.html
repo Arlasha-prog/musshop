@@ -10,6 +10,47 @@
   <link rel="stylesheet" href="{% static 'assets/css/fontawesome.css' %}">
   <link rel="stylesheet" href="{% static 'assets/css/templatemo-villa-agency.css' %}">
   <link rel="stylesheet" href="{% static 'assets/css/mobile.css' %}">
+  <style>
+    .site-header {
+      transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    }
+    .site-header .navbar-shell,
+    .site-header .brand-logo,
+    .site-header .brand-text {
+      transition: transform 0.3s ease, padding 0.3s ease, height 0.3s ease, opacity 0.3s ease;
+    }
+    .site-header.is-shrunk {
+      background-color: rgba(17, 19, 29, 0.92);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.24);
+    }
+    .site-header.is-shrunk .navbar-shell {
+      padding: 6px 0;
+    }
+    .site-header.is-shrunk .brand-logo {
+      height: 30px;
+    }
+    @media (min-width: 992px) {
+      .site-header.is-shrunk .brand-text {
+        transform: translateY(-2px) scale(0.92);
+      }
+      .site-header.is-shrunk .brand-subtitle {
+        opacity: 0;
+        visibility: hidden;
+        height: 0;
+      }
+    }
+    @media (max-width: 991.98px) {
+      .site-header.is-shrunk .navbar-shell {
+        padding: 8px 0;
+      }
+      .site-header.is-shrunk .brand-logo {
+        height: 28px;
+      }
+      .site-header.is-shrunk .nav-toggle {
+        transform: scale(0.92);
+      }
+    }
+  </style>
   {% block extra_css %}{% endblock %}
 </head>
 <body>
@@ -28,16 +69,17 @@
           </div>
         </a>
       </div>
-      <button class="nav-toggle" type="button" aria-controls="primaryNav" aria-expanded="false">
+      <button class="nav-toggle" type="button" aria-controls="primaryNav" aria-expanded="false" aria-label="Toggle navigation">
         <span></span><span></span><span></span>
       </button>
-      <nav class="nav-center" id="primaryNav">
+      <div class="nav-menu" id="primaryNav" aria-hidden="true">
+        <nav class="nav-links nav-center" aria-label="Primary navigation">
         <a href="{% url 'home' %}" class="{% if request.resolver_match.url_name == 'home' %}active{% endif %}">Главная</a>
         <a href="{% url 'shop_all' %}" class="{% if request.resolver_match.url_name == 'shop_all' or request.resolver_match.url_name == 'category' or request.resolver_match.url_name == 'product' %}active{% endif %}">Каталог</a>
         <a href="{% url 'orders:create' %}" class="{% if request.resolver_match.url_name == 'create' %}active{% endif %}">Оформить заказ</a>
         <a href="{% url 'flatpage' 'contact' %}" class="{% if request.resolver_match.url_name == 'contact' %}active{% endif %}">Контакты</a>
       </nav>
-      <div id="prayer-times-inline" class="nav-prayer-times">
+        <div id="prayer-times-inline" class="nav-prayer-times" role="group" aria-label="Prayer times">
         <span class="fw-semibold" style="white-space:nowrap;">🕌 Намаз (Алматы):</span>
         <span class="pt-item" id="pt-fajr" style="white-space:nowrap;">Фаджр — …</span><span class="text-muted d-none d-lg-inline">|</span>
         <span class="pt-item" id="pt-dhuhr" style="white-space:nowrap;">Зухр — …</span><span class="text-muted d-none d-lg-inline">|</span>
@@ -279,26 +321,42 @@
 <script>
   (function(){
     const toggle = document.querySelector('.nav-toggle');
-    const nav = document.getElementById('primaryNav');
+    const drawer = document.getElementById('primaryNav');
 
-    if(!toggle || !nav){
+    if(!toggle || !drawer){
       return;
     }
 
-    const closeNav = () => {
-      nav.classList.remove('is-open');
+    const syncHeaderHeight = () => {
+      const header = document.querySelector('.site-header');
+      if(!header){
+        return;
+      }
+      document.documentElement.style.setProperty('--header-height', `${header.offsetHeight}px`);
+    };
+
+    const closeNav = ({restoreFocus = false} = {}) => {
+      const wasOpen = drawer.classList.contains('is-open');
+      drawer.classList.remove('is-open');
+      drawer.setAttribute('aria-hidden', window.innerWidth >= 992 ? 'false' : 'true');
       toggle.setAttribute('aria-expanded', 'false');
       document.body.classList.remove('nav-open');
+      syncHeaderHeight();
+      if(restoreFocus && wasOpen){
+        toggle.focus();
+      }
     };
 
     const openNav = () => {
-      nav.classList.add('is-open');
+      drawer.classList.add('is-open');
+      drawer.setAttribute('aria-hidden', 'false');
       toggle.setAttribute('aria-expanded', 'true');
       document.body.classList.add('nav-open');
+      syncHeaderHeight();
     };
 
     toggle.addEventListener('click', function(){
-      const willOpen = !nav.classList.contains('is-open');
+      const willOpen = !drawer.classList.contains('is-open');
       if(willOpen){
         openNav();
       } else {
@@ -306,15 +364,33 @@
       }
     });
 
-    nav.querySelectorAll('a').forEach(function(link){
-      link.addEventListener('click', closeNav);
+    drawer.querySelectorAll('a').forEach(function(link){
+      link.addEventListener('click', function(){
+        closeNav();
+      });
     });
 
-    window.addEventListener('resize', function(){
-      if(window.innerWidth >= 992){
-        closeNav();
+    drawer.addEventListener('keyup', function(event){
+      if(event.key === 'Escape'){
+        closeNav({restoreFocus: true});
       }
     });
+
+    const syncNavState = () => {
+      if(window.innerWidth >= 992){
+        drawer.classList.remove('is-open');
+        drawer.setAttribute('aria-hidden', 'false');
+        toggle.setAttribute('aria-expanded', 'false');
+        document.body.classList.remove('nav-open');
+      } else {
+        closeNav();
+      }
+      syncHeaderHeight();
+    };
+
+    syncNavState();
+    syncHeaderHeight();
+    window.addEventListener('resize', syncNavState);
 
     document.addEventListener('click', function(event){
       const inside = event.target.closest('.navbar-shell');
@@ -322,6 +398,33 @@
         closeNav();
       }
     });
+  })();
+</script>
+<script>
+  (function(){
+    const header = document.querySelector('.site-header');
+    if(!header){
+      return;
+    }
+
+    const root = document.documentElement;
+    const shrinkOffset = 48;
+    const setHeaderHeight = () => {
+      root.style.setProperty('--header-height', `${header.offsetHeight}px`);
+    };
+    const updateHeaderState = () => {
+      if(window.scrollY > shrinkOffset){
+        header.classList.add('is-shrunk');
+      } else {
+        header.classList.remove('is-shrunk');
+      }
+      requestAnimationFrame(setHeaderHeight);
+    };
+
+    window.addEventListener('scroll', updateHeaderState, { passive: true });
+    window.addEventListener('resize', setHeaderHeight);
+    updateHeaderState();
+    setHeaderHeight();
   })();
 </script>
 {% block extra_js %}{% endblock %}
