@@ -409,11 +409,12 @@
 
     const root = document.documentElement;
     const shrinkOffset = 48;
+    const shouldShrink = () => window.scrollY > shrinkOffset || window.innerWidth < 992;
     const setHeaderHeight = () => {
       root.style.setProperty('--header-height', `${header.offsetHeight}px`);
     };
     const updateHeaderState = () => {
-      if(window.scrollY > shrinkOffset){
+      if(shouldShrink()){
         header.classList.add('is-shrunk');
       } else {
         header.classList.remove('is-shrunk');
@@ -422,7 +423,7 @@
     };
 
     window.addEventListener('scroll', updateHeaderState, { passive: true });
-    window.addEventListener('resize', setHeaderHeight);
+    window.addEventListener('resize', updateHeaderState);
     updateHeaderState();
     setHeaderHeight();
   })();
