@@ -34,6 +34,8 @@ log "Env & checks"
 export DJANGO_SETTINGS_MODULE="$DJANGO_SETTINGS_MODULE"
 export PYTHONUNBUFFERED=1
 
+log "DB backup (sqlite if exists)"; if [ -f db.sqlite3 ]; then cp db.sqlite3 db.sqlite3.bak.$(date +%Y%m%d-%H%M%S); fi;
+
 log "Migrations"
 $MANAGE migrate
 
@@ -46,5 +48,8 @@ systemctl restart "$NGINX_SERVICE"
 
 log "Gunicorn logs:"
 journalctl -u "$GUNICORN_SERVICE" -n 50 --no-pager || true
+
+log "Health check"
+curl -Is https://musshop.asia/ | head -n 1 || true
 
 log "Done. Commit: $(git rev-parse --short HEAD)"
